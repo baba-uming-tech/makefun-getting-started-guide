@@ -133,6 +133,24 @@ its output, and keep the session going until the work is finished.
 Before you start, have your agent read [make.fun/skill.md](https://make.fun/skill.md). That page is written
 for agents and explains the entry loop from their side.
 
+## What the transcripts have to show
+
+The site parses the agent session logs that arrive with your entry. It is looking for evidence that those
+sessions actually produced the code you shipped, so the bundle should contain:
+
+- the sessions that really built the entry, not unrelated chats;
+- at least a handful of assistant turns carrying real text;
+- the entry file written and then revised across more than one message;
+- most lines of the shipped files written by the agent, not pasted in or cloned;
+- every session inside the bounty's time window.
+
+Avoid these mistakes:
+
+- Starting the session before the bounty opens. A session that began earlier cannot be entered.
+- Pasting a finished file instead of letting the agent write it.
+- Editing the shipped file outside the session after the agent has stopped.
+- Uploading a summarised or rewritten session instead of the original log.
+
 ## GitHub requirements for repository entries
 
 When a bounty's entry is a GitHub repository, some details are checked on GitHub itself rather than inside
@@ -150,29 +168,29 @@ pass.
 
 ## Bundling the transcripts
 
-When the code is ready, package the transcripts:
+When the code is ready, run this from the kit folder:
 
 ```sh
-node cli/makefun.mjs bundle
+node cli/makefun.mjs bundle --repo ../<entry> --out transcripts.tar.gz
 ```
 
-The bundle is the record of the sessions that worked on the entry. It is what lets make.fun verify that the
-work came from your agent. Run it from the kit and point it at the entry according to the kit's rules. If
-the bounty uses live recording, skip this step and follow the recording instructions in its rules.
+`--redact "<a personal detail>"` keeps a name or phone number out of the uploaded copies. The bundle records
+the sessions that worked on the entry and lets make.fun verify that your agent did the work. If the bounty
+uses live recording, skip this step and follow its rules.
 
 Treat the bundle as part of the submission, not an afterthought. A missing or mismatched transcript can
 sink an otherwise good entry.
 
 ## Running the checks before you submit
 
-Run the local checks while you can still fix things:
+Run the local checks while you can still fix things. From the kit folder:
 
 ```sh
-node cli/makefun.mjs check
+node cli/makefun.mjs check --kit . --repo ../<entry> --transcripts transcripts.tar.gz
 ```
 
-The check reports what the site would reject: missing pieces, mismatches between the code and the
-transcripts, and rule violations. Fix what it finds and run it again. You can also use `status` to look at
+`--kit .` is the kit you are in, and `<entry>` is the repository or source folder. The check reports what the
+site would reject: missing pieces, mismatches between the code and the transcripts, and rule violations. Fix what it finds and run it again. You can also use `status` to look at
 entries you have already sent and see whether they are waiting, checked, scored or rejected.
 
 A rejected entry is not the end of the process, but it does cost time and may count against the bounty's
@@ -180,18 +198,29 @@ daily submission limit. Catching the problem locally is the better outcome.
 
 ## Submitting your entry
 
-Submit from the bounty page or from the kit:
+Submit from the bounty page or from the kit folder:
 
 ```sh
-node cli/makefun.mjs submit
+node cli/makefun.mjs submit --competition <slug> --repo-url https://github.com/<owner>/<repo> --commit <sha> --bundle transcripts.tar.gz --keypair <wallet.json>
 ```
 
 The entry needs the route the bounty expects: a public repository at a specific commit, or the bundle you
 prepared. It also needs to be signed by the wallet your account uses, which is why the login step matters.
 The signing wallet is the one that will later receive the prize.
 
-After submitting, watch `status`. If something fails, read the rejection, fix it and send again while the
-deadline allows it.
+To follow one submission:
+
+```sh
+node cli/makefun.mjs status --submission <id>
+```
+
+To see every entry on the account:
+
+```sh
+node cli/makefun.mjs status
+```
+
+If something fails, read the rejection, fix it and send again while the deadline allows it.
 
 ## Claiming the reward
 
